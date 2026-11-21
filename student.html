@@ -1,0 +1,164 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Dashboard | StudentAssignment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="logo">🎓 StudentAssignment</div>
+        <nav>
+            <a href="{{ url_for('student') }}">Dashboard</a>
+            <a href="#assignments">My Assignments</a>
+            <a href="#history">Submission History</a>
+        </nav>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="logout">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+        <div class="top">
+            <div>
+                <p class="eyebrow">STUDENT PORTAL</p>
+                <h1>Welcome, {{ user.full_name }}</h1>
+                <p class="muted">
+                    Student ID: {{ user.username }} |
+                    Semester {{ user.semester }}
+                </p>
+            </div>
+            <div class="avatar">Student</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="stats">
+            <div class="stat">
+                <small>Assigned Tasks</small>
+                <strong>{{ assignments|length }}</strong>
+            </div>
+            <div class="stat">
+                <small>Total Uploads</small>
+                <strong>{{ history|length }}</strong>
+            </div>
+        </section>
+
+        <section class="panel" id="assignments">
+            <h2>Assignments Given by Faculty</h2>
+            <p class="muted">
+                Complete and upload your work before the deadline.
+            </p>
+
+            {% for a in assignments %}
+            <div class="panel">
+                <h3>{{ a.title }}</h3>
+                <p>{{ a.description }}</p>
+
+                <p><strong>Faculty:</strong> {{ a.created_by }}</p>
+                <p><strong>Semester:</strong> {{ a.semester }}</p>
+                <p><strong>Deadline:</strong>
+                    {{ a.deadline.replace("T", " ") }}
+                </p>
+
+                {% if a.submission_id %}
+                    <p><strong>Status:</strong>
+                        <span class="pill">
+                            {{ a.submission_status }}
+                        </span>
+                    </p>
+                    <p><strong>Submitted File:</strong>
+                        {{ a.original_name }}
+                    </p>
+
+                    {% if a.feedback %}
+                        <p><strong>Faculty Feedback:</strong>
+                            {{ a.feedback }}
+                        </p>
+                    {% endif %}
+
+                {% elif a.deadline < now %}
+                    <p style="color:#c82e42;">
+                        <strong>Deadline Passed</strong>
+                    </p>
+
+                {% else %}
+                    <p><strong>Status:</strong> Pending</p>
+
+                    <form action="{{ url_for('upload') }}"
+                          method="POST"
+                          enctype="multipart/form-data">
+
+                        <input type="hidden"
+                               name="csrf_token"
+                               value="{{ csrf_token }}">
+
+                        <input type="hidden"
+                               name="assignment_id"
+                               value="{{ a.id }}">
+
+                        <label>Upload Your Assignment
+                            <input type="file"
+                                   name="assignment"
+                                   accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
+                                   required>
+                        </label>
+
+                        <button class="btn" type="submit">
+                            Submit Assignment
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            {% else %}
+                <p>No assignments have been given for your semester yet.</p>
+            {% endfor %}
+        </section>
+
+        <section class="panel" id="history">
+            <h2>My Submission History</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Download</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in history %}
+                        <tr>
+                            <td>{{ s.original_name }}</td>
+                            <td>{{ s.submitted_at }}</td>
+                            <td>{{ s.status }}</td>
+                            <td>
+                                <a href="{{ url_for('download_assignment', submission_id=s.id) }}">
+                                    Download
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">No submissions yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

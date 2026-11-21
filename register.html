@@ -1,0 +1,96 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register | StudentAssignmentPortal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="auth-layout">
+    <section class="hero">
+        <div class="logo">🎓 StudentAssignmentPortal</div>
+        <div>
+            <h1>Create Your StudentAssignmentPortal Account</h1>
+            <p>Register as a student or faculty member.</p>
+            <p>No approval required.</p>
+        </div>
+        <small>Student Assignment Submission Portal</small>
+    </section>
+
+    <section class="auth-card">
+        <h2>Registration</h2>
+        <p class="muted">Create your own login credentials.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <label>Register As
+                <select name="role" id="role" onchange="toggleSemester()" required>
+                    <option value="student">Student</option>
+                    <option value="faculty">Faculty</option>
+                </select>
+            </label>
+
+            <label>Full Name
+                <input type="text" name="full_name" maxlength="100" required>
+            </label>
+
+            <label>Student ID / Faculty ID
+                <input type="text" name="username"
+                       minlength="3" maxlength="30" required>
+            </label>
+
+            <label>Email
+                <input type="email" name="email" required>
+            </label>
+
+            <div id="semesterBox">
+                <label>Semester
+                    <select name="semester" id="semester">
+                        <option value="">Select Semester</option>
+                        {% for i in range(1, 9) %}
+                            <option value="{{ i }}">Semester {{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <label>Password
+                <input type="password" name="password" minlength="8" required>
+            </label>
+
+            <label>Confirm Password
+                <input type="password" name="confirm_password"
+                       minlength="8" required>
+            </label>
+
+            <button class="btn" type="submit">Register</button>
+        </form>
+
+        <p>Already have an account?
+            <a href="{{ url_for('home') }}">Login</a>
+        </p>
+    </section>
+</div>
+
+<script>
+function toggleSemester() {
+    const faculty = document.getElementById("role").value === "faculty";
+    const box = document.getElementById("semesterBox");
+    const semester = document.getElementById("semester");
+
+    box.style.display = faculty ? "none" : "block";
+    semester.required = !faculty;
+}
+toggleSemester();
+</script>
+</body>
+</html>

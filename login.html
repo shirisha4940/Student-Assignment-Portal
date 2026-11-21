@@ -1,0 +1,117 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | Student Assignment Portal</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="auth-layout">
+
+    <!-- LEFT SIDE -->
+    <section class="hero">
+
+        <div class="logo">
+            🎓 Student Assignment Portal
+        </div>
+
+        <div>
+            <h1>Assignment submissions, made simple.</h1>
+
+            <p>
+                A secure space for students and faculty
+                to manage coursework.
+            </p>
+
+            <p>
+                ✓ Student Accounts
+                &nbsp; ✓ Faculty Accounts
+                &nbsp; ✓ Upload Tracking
+            </p>
+        </div>
+
+        <small>Student Assignment Portal | College Portal</small>
+
+    </section>
+
+    <!-- LOGIN SECTION -->
+    <section class="auth-card">
+
+        <h2>Welcome Back</h2>
+
+        <p class="muted">
+            Sign in with your Student ID or Faculty ID.
+        </p>
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <!-- LOGIN FORM -->
+        <form action="{{ url_for('login') }}"
+              method="POST">
+
+            <!-- SECURITY TOKEN -->
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token }}">
+
+            <!-- USER ID -->
+            <label for="username">
+                Student ID / Faculty ID
+            </label>
+
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter Student ID or Faculty ID"
+                autocomplete="username"
+                required>
+
+            <!-- PASSWORD -->
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required>
+
+            <!-- SIGN IN BUTTON -->
+            <button class="btn" type="submit">
+                Sign In
+            </button>
+
+        </form>
+
+        <!-- REGISTER LINK -->
+        <p>
+            New Student or Faculty?
+            <a href="{{ url_for('register') }}">
+                Create an Account
+            </a>
+        </p>
+
+    </section>
+
+</div>
+
+</body>
+</html>

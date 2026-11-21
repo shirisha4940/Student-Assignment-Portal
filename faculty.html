@@ -1,0 +1,169 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Faculty Dashboard | StudentAssignment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="logo">🎓 StudentAssignment</div>
+        <nav>
+            <a href="{{ url_for('faculty') }}">Dashboard</a>
+            <a href="#create">Create Assignment</a>
+            <a href="#given">Given Assignments</a>
+            <a href="#review">Review Submissions</a>
+        </nav>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="logout">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+        <div class="top">
+            <div>
+                <p class="eyebrow">FACULTY PORTAL</p>
+                <h1>Faculty Dashboard</h1>
+                <p class="muted">
+                    Create assignments and review student submissions.
+                </p>
+            </div>
+            <div class="avatar">Faculty</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <section class="stats">
+            <div class="stat">
+                <small>Assignments Created</small>
+                <strong>{{ assignments|length }}</strong>
+            </div>
+            <div class="stat">
+                <small>Student Submissions</small>
+                <strong>{{ submissions|length }}</strong>
+            </div>
+        </section>
+
+        <section class="panel" id="create">
+            <h2>Create New Assignment</h2>
+
+            <form method="POST" action="{{ url_for('create_assignment') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <label>Assignment Title
+                    <input type="text" name="title"
+                           maxlength="150" required>
+                </label>
+
+                <label>Assignment Description
+                    <textarea name="description" rows="5"
+                              maxlength="3000" required
+                              style="width:100%;padding:12px;border:1px solid #cbd7e7;border-radius:9px;"></textarea>
+                </label>
+
+                <label>Assign To
+                    <select name="semester" required>
+                        <option value="">Select Semester</option>
+                        <option value="All">All Semesters</option>
+                        {% for i in range(1, 9) %}
+                            <option value="{{ i }}">Semester {{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>Submission Deadline
+                    <input type="datetime-local" name="deadline" required>
+                </label>
+
+                <button class="btn" type="submit">
+                    Publish Assignment
+                </button>
+            </form>
+        </section>
+
+        <section class="panel" id="given">
+            <h2>Published Assignments</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Semester</th>
+                            <th>Deadline</th>
+                            <th>Created By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in assignments %}
+                        <tr>
+                            <td>{{ a.title }}</td>
+                            <td>{{ a.semester }}</td>
+                            <td>{{ a.deadline.replace("T", " ") }}</td>
+                            <td>{{ a.created_by }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">
+                                No assignments created yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel" id="review">
+            <h2>Review Student Assignments</h2>
+
+            {% for s in submissions %}
+            <div class="panel">
+                <h3>{{ s.assignment_title or "Previous Submission" }}</h3>
+
+                <p><strong>Student ID:</strong> {{ s.student }}</p>
+                <p><strong>File:</strong> {{ s.original_name }}</p>
+                <p><strong>Submitted:</strong> {{ s.submitted_at }}</p>
+                <p><strong>Status:</strong> {{ s.status }}</p>
+
+                <p>
+                    <a href="{{ url_for('download_assignment', submission_id=s.id) }}">
+                        Download Student Assignment
+                    </a>
+                </p>
+
+                <form method="POST"
+                      action="{{ url_for('review_submission', submission_id=s.id) }}">
+
+                    <input type="hidden"
+                           name="csrf_token"
+                           value="{{ csrf_token }}">
+
+                    <label>Faculty Feedback
+                        <textarea name="feedback" rows="3"
+                                  maxlength="2000"
+                                  style="width:100%;padding:12px;border:1px solid #cbd7e7;border-radius:9px;">{{ s.feedback or "" }}</textarea>
+                    </label>
+
+                    <button class="btn" type="submit">
+                        Mark as Reviewed
+                    </button>
+                </form>
+            </div>
+            {% else %}
+                <p>No student submissions available for review.</p>
+            {% endfor %}
+        </section>
+    </main>
+</div>
+</body>
+</html>
